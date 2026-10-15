@@ -1,0 +1,35 @@
+name: TinkerHub Event Digest
+
+on:
+  schedule:
+    - cron: "30 18 * * *"   # 18:00 IST daily (India Standard Time)
+    - cron: "0 */13 * * *"  # every 13 hours
+  workflow_dispatch:
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -q python-dotenv google-generativeai groq huggingface_hub requests yt-dlp
+
+      - name: Check events + digest
+        run: python3 .github/scripts/daily_digest.py
+
+      - name: Post success
+        if: success()
+        run: echo "✅ TinkerHub digest complete"
