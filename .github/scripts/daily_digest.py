@@ -4,7 +4,6 @@ import os, json, subprocess, base64, re, time
 from datetime import datetime
 
 # 1. Check tinkerhub.org/events for today's event
-import requests
 r = requests.get("https://tinkerhub.org/events", timeout=15)
 today_str = datetime.now().strftime("%b %d").lower()
 event_links = re.findall(r'href="(/events/[^"]+)"', r.text)
@@ -30,7 +29,7 @@ if has_event and event_path:
             live = j.get("is_live", False)
         except: live = False
         
-        # Wait for stream to finish (if live)
+        # Wait for stream to finish
         if live:
             for i in range(24):
                 try:
@@ -44,8 +43,8 @@ if has_event and event_path:
         subprocess.run(["yt-dlp", "-o", out, stream], check=False)
         print(f"Downloaded {out}")
         
-        # --- DIGEST: Choose Gemini OR Groq hybrid ---
-        USE_GEMINI = os.getenv("USE_GEMINI_VIDEO", "false").lower() == "true"
+        # Digest: Gemini 2.5-flash only (proven working; avoids OpenRouter bracket bug)
+        USE_GEMINI = os.getenv("USE_GEMINI_VIDEO", "true").lower() == "true"
         
         if USE_GEMINI:
             from google import genai
@@ -67,33 +66,8 @@ Date, Duration, Host: <name>, Event type
                 resp = client.models.generate_content(model="gemini-2.5-flash", contents=[f, prompt])
                 output_md = resp.text
         else:
-            from groq import Groq
-            client_g = Groq(api_key=os.getenv("GROQ_API_KEY"))
-            subprocess.run(["ffmpeg", "-y", "-i", out, "-vn", "tmp/audio.wav"], check=False)
-            with open("tmp/audio.wav", "rb") as f:
-                t = client_g.audio.transcriptions.create(model="whisper-large-v3", file=("audio.wav", f.read()))
-            frames = []
-            for ts in [300, 900, 1500, 2100, 2700, 3300, 3900, 4500, 5100]:
-                outf = f"tmp/frame_{ts}.jpg"
-                subprocess.run(["ffmpeg", "-y", "-ss", str(ts), "-i", out, "-frames:v", "1", outf], check=False)
-                if os.path.exists(outf): frames.append(outf)
-            descs = []
-            for f_path in frames[:5]:
-                with open(f_path, "rb") as img:
-                    b64 = base64.b64encode(open(f_path, "rb").read()).decode()
-                r = client_g.chat.completions.create(model="qwen/qwen3.6-27b",
-                    messages=[{"role": "user", "content": [
-                        {"type": "text", "text": "Describe this TinkerHub event frame"},
-                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}}
-                    ]})
-                )
-                descs.append(r.choices[0].message.content)
-            import requests as reqs
-            prompt = f"Transcript:{t.text[:6000]}\nVision:{descs}\nCreate markdown with title, summary, timestamps, tools, next steps, host name."
-            rr = reqs.post("https://openrouter.ai/api/v1/chat/completions",
-                headers={"Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"},
-                json={"model": "qwen/qwen-2.5-7b-instruct:free", "messages": [{"role": "user", "content": prompt}]}, timeout=60)
-            output_md = rr.json()["choices"][0]["message"]["content"]
+            print("Gemini disabled; skipping digest")
+            output_md = ""
         
         # Write documentation
         out_date = datetime.now().strftime("%Y-%m-%d")
