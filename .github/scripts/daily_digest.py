@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Daily TinkerHub event digest - runs via GitHub Actions"""
 import os, json, subprocess, base64, re, time
+import requests
 from datetime import datetime
 
 # 1. Check tinkerhub.org/events for today's event
