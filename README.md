@@ -1,11 +1,11 @@
-# TinkerHub-Event-Docs
+# TinkerHub Event Docs
 
-Public archive of **TinkerHub Kochi** daily event documentation — AI Wednesday, Maker Thursday, Security Tuesday, and major events.
+Public archive of dated notes for **TinkerSpace, Kochi** events. A new digest is published only after the scheduled event has ended and a recording has been matched to the event by title and date. If no matching recording is available, the automation skips the event and retries later; it does not create a speculative document.
 
-When a recording is available, the automation produces evidence-based notes with timestamps, demos, tools, Q&A, and next steps. Unclear details are marked as unknown.
+The private automation preserves spoken material in timestamped audio-only chunks and uses low-resolution video selectively for demos and other visually important moments. Notes can include the event timeline, demonstrations, questions, tools, and next steps; unclear or visually unreadable details are not guessed.
 
-- Source: https://tinkerhub.org/events
-- Automation: [Aghosh-mv/tinkerhub-auto-doc](https://github.com/Aghosh-mv/tinkerhub-auto-doc) (private)
-- Updates: scheduled checks publish only when a recording matches an event; no speculative notes are created
+- Official event list: https://tinkerhub.org/events
+- Official TinkerSpace recording playlist: https://www.youtube.com/playlist?list=PLxSsLHbMIhaq2xdGAW5Kh4ohZksN7FYke
+- Private automation: [Aghosh-mv/tinkerhub-auto-doc](https://github.com/Aghosh-mv/tinkerhub-auto-doc)
 
-Search: `tinkerhub-event-docs`, `tinkerhub kochi events`, `tinkerhub documentation`
+The automation and its configuration are not stored in this public archive. This description explains the publication rule and does not claim that a new digest has been generated.
